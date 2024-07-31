@@ -2,31 +2,30 @@ from cryptography.fernet import Fernet
 import os
 
 def decrypt_file(file_path, key):
-    with open(file_path, "rb") as file:
-        encrypted_data = file.read()
+    file = open(file_path, "rb")
+    data = file.read()
+    file.close()
 
-    cipher_suite = Fernet(key)
-    decrypted_data = cipher_suite.decrypt(encrypted_data)
+    cipher = Fernet(key)
+    decrypted = cipher.decrypt(data)
 
-    with open(file_path, "wb") as file:
-        file.write(decrypted_data)
+    file = open(file_path, "wb")
+    file.write(decrypted)
+    file.close()
 
 def main():
-    current_directory = os.path.dirname(os.path.realpath(__file__))
+    dir_path = os.path.dirname(os.path.realpath(__file__))
 
-    # Prompt the user for the key
     key = input("Enter the encryption key: ").encode()
 
-    # Decrypt files in the directory
-    for file_name in os.listdir(current_directory):
-        file_path = os.path.join(current_directory, file_name)
+    for fname in os.listdir(dir_path):
+        path = os.path.join(dir_path, fname)
 
-        # Exclude script files
-        if file_name.endswith(".py"):
+        if fname.endswith(".py"):
             continue
 
-        decrypt_file(file_path, key)
-        print(f"File decrypted: {file_name}")
+        decrypt_file(path, key)
+        print(f"Decrypted: {fname}")
 
 if __name__ == "__main__":
     main()
