@@ -2,52 +2,65 @@ from cryptography.fernet import Fernet
 import os
 
 def generate_key():
+    # Generate a new encryption key
     return Fernet.generate_key()
 
 def load_key(key_file):
-    return open(key_file, "rb").read()
+    # Load the encryption key from a file
+    f = open(key_file, "rb")
+    key = f.read()
+    f.close()
+    return key
 
 def save_key(key_file, key):
-    with open(key_file, "wb") as key_file:
-        key_file.write(key)
+    # Save the encryption key to a file
+    f = open(key_file, "wb")
+    f.write(key)
+    f.close()
 
 def encrypt_file(file_path, key):
-    with open(file_path, "rb") as file:
-        data = file.read()
+    # Encrypt a single file
+    f = open(file_path, "rb")
+    data = f.read()
+    f.close()
 
-    cipher_suite = Fernet(key)
-    encrypted_data = cipher_suite.encrypt(data)
+    cipher = Fernet(key)
+    encrypted = cipher.encrypt(data)
 
-    with open(file_path, "wb") as file:
-        file.write(encrypted_data)
+    f = open(file_path, "wb")
+    f.write(encrypted)
+    f.close()
 
-def encrypt_directory(directory_path, key):
-    for foldername, subfolders, filenames in os.walk(directory_path):
-        for filename in filenames:
-            file_path = os.path.join(foldername, filename)
+def encrypt_directory(dir_path, key):
+    # Encrypt all files in a directory
+    for root, dirs, files in os.walk(dir_path):
+        for file in files:
+            path = os.path.join(root, file)
 
-            # Exclude script files and the key file
-            if filename.endswith(".py") or filename == "encryption_key.key":
+            # Skip Python scripts and the key file
+            if file.endswith(".py") or file == "encryption_key.key":
                 continue
 
-            encrypt_file(file_path, key)
-            print(f"File encrypted: {filename}")
+            encrypt_file(path, key)
+            print("Encrypted:", file)
 
 def main():
-    current_directory = os.path.dirname(os.path.realpath(__file__))
-    key_file = os.path.join(current_directory, "encryption_key.key")
+    # Main function to handle the encryption process
+    cur_dir = os.path.dirname(os.path.realpath(__file__))
+    key_path = os.path.join(cur_dir, "encryption_key.key")
 
-    # Generate or load the key
-    if not os.path.exists(key_file):
+    if not os.path.exists(key_path):
+        # Generate and save key if it doesn't exist
         key = generate_key()
-        save_key(key_file, key)
-        print("Encryption key generated and saved:", key)
+        save_key(key_path, key)
+        print("Key made and saved:", key)
     else:
-        key = load_key(key_file)
-        print("Encryption key loaded from file:", key)
+        # Load the existing key
+        key = load_key(key_path)
+        print("Key loaded:", key)
 
-    # Encrypt files in the directory recursively
-    encrypt_directory(current_directory, key)
+    # Encrypt files in the current directory
+    encrypt_directory(cur_dir, key)
 
 if __name__ == "__main__":
     main()
